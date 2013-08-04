@@ -21,7 +21,8 @@ COLOR_MAP = { 	'white': 0,
 				'magenta': 70,
 				'orange': 84,
 				'uv': 98,
-				'pink':112 }
+				'pink':112,
+				'rainbow':156 }
 FOCUS_CHANNEL = 10
 PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10},
 				'sun1': {'channel': 6, 'value': 20},
@@ -116,10 +117,22 @@ def set_focus(percent):
 @app.route('/pattern/<pattern>')
 def set_pattern(pattern):
 	if pattern in PATTERN_MAP:
+		# Remove previous patterns
+		set_dmx(6,0)
+		set_dmx(8,0)
 		set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
 		return 'Set pattern to %s' % pattern
 	else:
 		return 'Pattern %s not supported' % pattern
+
+@app.route('/brightness/<int:brightness>')
+def set_brightness(brightness):
+	if (brightness >= 0) and (brightness <= 100):
+		set_dmx(12,128)
+		set_dmx(12,math.floor(float(brightness) / 100 * 255))
+		return 'Set brightness to %d percent' % brightness
+	else:
+		return 'Brightness must be between 0 and 100'
 
 @app.route('/reset')
 def reset():
@@ -127,6 +140,7 @@ def reset():
 	for channel in range(4,14):
 		set_dmx(channel, 0)
 	set_dmx(11, 255)
+	set_dmx(12, 128)
 	set_dmx(12, 255)
 	return 'Light reset'
 
