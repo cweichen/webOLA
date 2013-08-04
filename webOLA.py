@@ -39,6 +39,9 @@ PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10, 'slow': 85, 'medium': 90, 'f
 				'croquet': {'channel': 8, 'value': 84, 'slow': 195, 'medium': 201, 'fast': 207},
 				'dots2': {'channel': 8, 'value': 98, 'slow': 211, 'medium': 217, 'fast': 223}}
 SHAKE_MAP = ['slow', 'medium', 'fast']
+PRISM_CHANNEL = 9
+PRISM_MAP = {	'cw': {'slow': 55, 'medium': 40, 'fast': 20},
+				'ccw': {'slow': 80, 'medium': 100, 'fast': 120}}
 
 def read_dmx():
 	response = urllib2.urlopen(OLA_HOST + '/get_dmx?u=%d' % UNIVERSE)
@@ -76,6 +79,16 @@ def set_dmx(channel, value):
 def set_color(color):
 	if color in COLOR_MAP:
 		set_dmx(COLOR_CHANNEL, COLOR_MAP[color])
+
+		# Prism
+		prism_dir = request.args.get('prism_dir')
+		if prism_dir in PRISM_MAP:
+			prism_speed = request.args.get('prism_speed')
+			if prism_speed in PRISM_MAP[prism_dir]:
+				set_dmx(PRISM_CHANNEL, PRISM_MAP[prism_dir][prism_speed])
+		else:
+			set_dmx(PRISM_CHANNEL, 0)
+
 		return 'Set color to %s' % color
 	else:
 		return 'Color %s not supported' % color
@@ -116,18 +129,28 @@ def set_focus(percent):
 
 @app.route('/pattern/<pattern>')
 def set_pattern(pattern):
+	# Remove previous patterns
+	set_dmx(6,0)
+	set_dmx(8,0)
 	if pattern in PATTERN_MAP:
-		# Remove previous patterns
-		set_dmx(6,0)
-		set_dmx(8,0)
-
 		# Check for extra effects
-		shake = request.args.get('shake', '')
+		# Shake
+		shake = request.args.get('shake')
 		if shake in SHAKE_MAP:
 			set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern][shake])
 		else:
 			# Set new pattern
 			set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
+
+		# Prism
+		prism_dir = request.args.get('prism_dir')
+		if prism_dir in PRISM_MAP:
+			prism_speed = request.args.get('prism_speed')
+			if prism_speed in PRISM_MAP[prism_dir]:
+				set_dmx(PRISM_CHANNEL, PRISM_MAP[prism_dir][prism_speed])
+		else:
+			set_dmx(PRISM_CHANNEL, 0)
+
 		return 'Set pattern to %s' % pattern
 	else:
 		return 'Pattern %s not supported' % pattern
@@ -147,7 +170,9 @@ def reset():
 	for channel in range(4,14):
 		set_dmx(channel, 0)
 	set_dmx(11, 255)
+	set_dmx(12, 64)
 	set_dmx(12, 128)
+	set_dmx(12, 192)
 	set_dmx(12, 255)
 	return 'Light reset'
 
