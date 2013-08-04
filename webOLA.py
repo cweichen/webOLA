@@ -30,7 +30,7 @@ PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10, 'slow': 85, 'medium': 90, 'f
 				'eclipse': {'channel': 6, 'value': 40, 'slow': 145, 'medium': 150, 'fast': 159},
 				'sun2': {'channel': 6, 'value': 50, 'slow': 165, 'medium': 170, 'fast': 179},
 				'cells': {'channel': 6, 'value': 60, 'slow': 185, 'medium': 190, 'fast': 199},
-				'dots1': {'channel': 6, 'value': 70, 'slow': 205, 'medium': 210, 'fast': 230},
+				'dots1': {'channel': 6, 'value': 70, 'slow': 205, 'medium': 210, 'fast': 219},
 				'stars': {'channel': 8, 'value': 14, 'slow': 115, 'medium': 121, 'fast': 127},
 				'mandala': {'channel': 8, 'value': 28, 'slow': 131, 'medium': 137, 'fast': 143},
 				'sun3': {'channel': 8, 'value': 42, 'slow': 147, 'medium': 153, 'fast': 159},
@@ -40,8 +40,8 @@ PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10, 'slow': 85, 'medium': 90, 'f
 				'dots2': {'channel': 8, 'value': 98, 'slow': 211, 'medium': 217, 'fast': 223}}
 SHAKE_MAP = ['slow', 'medium', 'fast']
 PRISM_CHANNEL = 9
-PRISM_MAP = {	'cw': {'slow': 55, 'medium': 40, 'fast': 20},
-				'ccw': {'slow': 80, 'medium': 100, 'fast': 120},
+PRISM_MAP = {	'cw': {'slow': 51, 'medium': 33, 'fast': 15},
+				'ccw': {'slow': 82, 'medium': 97, 'fast': 120},
 				'off': {'slow': 0, 'medium': 0, 'fast': 0}}
 STROBE_CHANNEL = 11
 STROBE_MAP = {'off': 255, 'slow': 75, 'medium': 85, 'fast': 95}
