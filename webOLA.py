@@ -22,6 +22,21 @@ COLOR_MAP = { 	'white': 0,
 				'orange': 84,
 				'uv': 98,
 				'pink':112 }
+FOCUS_CHANNEL = 10
+PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10},
+				'sun1': {'channel': 6, 'value': 20},
+				'spiral': {'channel': 6, 'value': 30},
+				'eclipse': {'channel': 6, 'value': 40},
+				'sun2': {'channel': 6, 'value': 50},
+				'cells': {'channel': 6, 'value': 60},
+				'dots1': {'channel': 6, 'value': 70},
+				'stars': {'channel': 8, 'value': 14},
+				'mandala': {'channel': 8, 'value': 28},
+				'sun3': {'channel': 8, 'value': 42},
+				'triangles': {'channel': 8, 'value': 56},
+				'sun4': {'channel': 8, 'value': 70},
+				'croquet': {'channel': 8, 'value': 84},
+				'dots2': {'channel': 8, 'value': 98},}
 
 def read_dmx():
 	response = urllib2.urlopen(OLA_HOST + '/get_dmx?u=%d' % UNIVERSE)
@@ -90,11 +105,29 @@ def set_tilt_preset(preset):
 	else:
 		return 'Unsupported preset'
 
+@app.route('/focus/<int:percent>')
+def set_focus(percent):
+	if (percent >= 0) and (percent <= 100):
+		set_dmx(FOCUS_CHANNEL, math.floor(float(percent) / 100 * 255))
+		return 'Set focus to %d' % percent
+	else:
+		return 'Focus must be between 0 and 100'
+
+@app.route('/pattern/<pattern>')
+def set_pattern(pattern):
+	if pattern in PATTERN_MAP:
+		set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
+		return 'Set pattern to %s' % pattern
+	else:
+		return 'Pattern %s not supported' % pattern
+
 @app.route('/reset')
 def reset():
 	dmx = read_dmx()
-	for channel in range(4,10):
+	for channel in range(4,14):
 		set_dmx(channel, 0)
+	set_dmx(11, 255)
+	set_dmx(12, 255)
 	return 'Light reset'
 
 if __name__ == '__main__':
