@@ -41,7 +41,12 @@ PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10, 'slow': 85, 'medium': 90, 'f
 SHAKE_MAP = ['slow', 'medium', 'fast']
 PRISM_CHANNEL = 9
 PRISM_MAP = {	'cw': {'slow': 55, 'medium': 40, 'fast': 20},
-				'ccw': {'slow': 80, 'medium': 100, 'fast': 120}}
+				'ccw': {'slow': 80, 'medium': 100, 'fast': 120},
+				'off': {'slow': 0, 'medium': 0, 'fast': 0}}
+STROBE_CHANNEL = 11
+STROBE_MAP = {'off': 255, 'slow': 75, 'medium': 85, 'fast': 95}
+PULSE_CHANNEL = 11
+PULSE_MAP = {'off': 255, 'slow': 139, 'medium': 149, 'fast': 159}
 
 def read_dmx():
 	response = urllib2.urlopen(OLA_HOST + '/get_dmx?u=%d' % UNIVERSE)
@@ -79,15 +84,6 @@ def set_dmx(channel, value):
 def set_color(color):
 	if color in COLOR_MAP:
 		set_dmx(COLOR_CHANNEL, COLOR_MAP[color])
-
-		# Prism
-		prism_dir = request.args.get('prism_dir')
-		if prism_dir in PRISM_MAP:
-			prism_speed = request.args.get('prism_speed')
-			if prism_speed in PRISM_MAP[prism_dir]:
-				set_dmx(PRISM_CHANNEL, PRISM_MAP[prism_dir][prism_speed])
-		else:
-			set_dmx(PRISM_CHANNEL, 0)
 
 		return 'Set color to %s' % color
 	else:
@@ -142,18 +138,39 @@ def set_pattern(pattern):
 			# Set new pattern
 			set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
 
-		# Prism
-		prism_dir = request.args.get('prism_dir')
-		if prism_dir in PRISM_MAP:
-			prism_speed = request.args.get('prism_speed')
-			if prism_speed in PRISM_MAP[prism_dir]:
-				set_dmx(PRISM_CHANNEL, PRISM_MAP[prism_dir][prism_speed])
-		else:
-			set_dmx(PRISM_CHANNEL, 0)
-
 		return 'Set pattern to %s' % pattern
 	else:
 		return 'Pattern %s not supported' % pattern
+
+@app.route('/prism')
+def set_prism():
+	# Prism
+	prism_dir = request.args.get('dir')
+	if prism_dir in PRISM_MAP:
+		prism_speed = request.args.get('speed')
+		if prism_speed not in PRISM_MAP[prism_dir]:
+			prism_speed = 'medium'
+		set_dmx(PRISM_CHANNEL, PRISM_MAP[prism_dir][prism_speed])
+		return 'Set prism to %s and %s' % (prism_dir, prism_speed)
+	else:
+		set_dmx(PRISM_CHANNEL, PRISM_MAP['cw','medium'])
+		return 'Set prism to cw and medium'
+
+@app.route('/strobe/<speed>')
+def set_strobe(speed):
+	if speed in STROBE_MAP:
+		set_dmx(STROBE_CHANNEL, STROBE_MAP[speed])
+		return 'Set strobe to %s' % speed
+	else:
+		return 'Speed %s is unsupported' % speed
+
+@app.route('/pulse/<speed>')
+def set_pulse(speed):
+	if speed in PULSE_MAP:
+		set_dmx(PULSE_CHANNEL, PULSE_MAP[speed])
+		return 'Set pulse to %s' % speed
+	else:
+		return 'Speed %s is unsupported' % speed
 
 @app.route('/brightness/<int:brightness>')
 def set_brightness(brightness):
