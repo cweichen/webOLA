@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import array, urllib, urllib2, json, math
 app = Flask(__name__)
 
@@ -24,20 +24,21 @@ COLOR_MAP = { 	'white': 0,
 				'pink':112,
 				'rainbow':156 }
 FOCUS_CHANNEL = 10
-PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10},
-				'sun1': {'channel': 6, 'value': 20},
-				'spiral': {'channel': 6, 'value': 30},
-				'eclipse': {'channel': 6, 'value': 40},
-				'sun2': {'channel': 6, 'value': 50},
-				'cells': {'channel': 6, 'value': 60},
-				'dots1': {'channel': 6, 'value': 70},
-				'stars': {'channel': 8, 'value': 14},
-				'mandala': {'channel': 8, 'value': 28},
-				'sun3': {'channel': 8, 'value': 42},
-				'triangles': {'channel': 8, 'value': 56},
-				'sun4': {'channel': 8, 'value': 70},
-				'croquet': {'channel': 8, 'value': 84},
-				'dots2': {'channel': 8, 'value': 98},}
+PATTERN_MAP = {	'bars': {'channel': 6, 'value': 10, 'slow': 85, 'medium': 90, 'fast': 99},
+				'sun1': {'channel': 6, 'value': 20, 'slow': 105, 'medium': 110, 'fast': 119},
+				'spiral': {'channel': 6, 'value': 30, 'slow': 125, 'medium': 130, 'fast': 139},
+				'eclipse': {'channel': 6, 'value': 40, 'slow': 145, 'medium': 150, 'fast': 159},
+				'sun2': {'channel': 6, 'value': 50, 'slow': 165, 'medium': 170, 'fast': 179},
+				'cells': {'channel': 6, 'value': 60, 'slow': 185, 'medium': 190, 'fast': 199},
+				'dots1': {'channel': 6, 'value': 70, 'slow': 205, 'medium': 210, 'fast': 230},
+				'stars': {'channel': 8, 'value': 14, 'slow': 115, 'medium': 121, 'fast': 127},
+				'mandala': {'channel': 8, 'value': 28, 'slow': 131, 'medium': 137, 'fast': 143},
+				'sun3': {'channel': 8, 'value': 42, 'slow': 147, 'medium': 153, 'fast': 159},
+				'triangles': {'channel': 8, 'value': 56, 'slow': 163, 'medium': 169, 'fast': 175},
+				'sun4': {'channel': 8, 'value': 70, 'slow': 179, 'medium': 185, 'fast': 191},
+				'croquet': {'channel': 8, 'value': 84, 'slow': 195, 'medium': 201, 'fast': 207},
+				'dots2': {'channel': 8, 'value': 98, 'slow': 211, 'medium': 217, 'fast': 223}}
+SHAKE_MAP = ['slow', 'medium', 'fast']
 
 def read_dmx():
 	response = urllib2.urlopen(OLA_HOST + '/get_dmx?u=%d' % UNIVERSE)
@@ -59,7 +60,6 @@ def set_dmx(channel, value):
 
 	dmx = read_dmx()
 	# Set new value
-	print dmx
 	dmx[channel - 1] = value 
 	query_args = { 'u': str(UNIVERSE), 'd': ",".join([str(x) for x in dmx])}
 
@@ -120,7 +120,14 @@ def set_pattern(pattern):
 		# Remove previous patterns
 		set_dmx(6,0)
 		set_dmx(8,0)
-		set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
+
+		# Check for extra effects
+		shake = request.args.get('shake', '')
+		if shake in SHAKE_MAP:
+			set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern][shake])
+		else:
+			# Set new pattern
+			set_dmx(PATTERN_MAP[pattern]['channel'], PATTERN_MAP[pattern]['value'])
 		return 'Set pattern to %s' % pattern
 	else:
 		return 'Pattern %s not supported' % pattern
